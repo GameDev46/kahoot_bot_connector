@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap');
+
+body {
+	background: rgb(235, 235, 235);
+	--websiteFont: "Montserrat";
+	text-align: center;
+}
+
+h1 {
+	position: relative;
+	font-family: var(--websiteFont), sans-serif;
+	font-size: 40px;
+	font-weight: 100;
+	letter-spacing: 1px;
+	color: rgb(12, 12, 12);
+}
+
+button {
+	position: relative;
+	width: 150px;
+	height: 40px;
+	background: rgb(45, 153, 15);
+	border: none;
+	outline: none;
+	border-radius: 3px;
+	box-shadow: 0 6px 0 rgb(35, 121, 11);
+	cursor: pointer;
+	transition: 0 linear;
+	color: white;
+	font-family: var(--websiteFont), sans-serif;
+	font-size: 15px;
+	font-weight: 100;
+	letter-spacing: 1px;
+}
+
+button:hover {
+	background: rgb(39, 136, 13);
+	box-shadow: 0 3px 0 rgb(35, 121, 11);
+	transform: translateY(3px);
+}
+
+button:focus {
+	background: rgb(39, 136, 13);
+	box-shadow: 0 1px 0 rgb(35, 121, 11);
+	transform: translateY(5px);
+}
+
+label {
+	position: relative;
+	color: rgb(12, 12, 12);
+	font-family: var(--websiteFont), sans-serif;
+	font-size: 18px;
+	font-weight: 100;
+	letter-spacing: 0.4px;
+}
+
+input[type=number] {
+	position: relative;
+	width: 200px;
+	height: 35px;
+	padding-left: 10px;
+	color: rgb(12, 12, 12);
+	font-family: var(--websiteFont), sans-serif;
+	font-size: 15px;
+	font-weight: 100;
+	letter-spacing: 0.4px;
+	border-radius: 4px;
+	outline: none;
+	border: 1px solid rgb(141, 141, 141);
+}
