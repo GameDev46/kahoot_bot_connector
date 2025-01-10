@@ -19,7 +19,7 @@
 	github: https://github.com/GameDev46
 */
 
-const Kahoot = require("kahoot.js-api");
+const Kahoot = require("kahoot.js-latest");
 const http = require("http");
 const express = require("express");
 const fs = require("fs");
@@ -27,93 +27,71 @@ const path = require('path');
 const url = require("url")
 
 const app = express();
-var kahoots = [];
-var kahootNameIndex = [];
 
-var gameID = "";
-var bot_count = 150;
+let kahoots = {};
+let kahootUniqueID = 0;
 
-const botNames = ["Thomas", "Peter", "Charlotte", "Sarah", "Bob", "Jeff", "Tony", "😂", "😆", "😃", "KahootMan52", "🥸", "Isabella", "GamerMan53", "qwerty", "123456789", "Steven", "Stephen", "Jeremy", "£&@/)/£/", "🍌", "🥔", "🥖", "⚽️🏀🏈⚾️", "💢", "Siri", "Cortana", "Google assistant", "Google", "Bing", "Mark Zuckerberg", "Jeff Bezos", "Bill Gates", "Virgin airlines", "Easy jet", "ur mum", "joe mama", "dwayne johnson", "Benjamin", "moe", "lester", "Beluga", "Imagine losing", "⠀⠀", "Big Boy Elon", "Elon Musk", "Tickle my Tesla", "KahootMan56", "Electrifying Elon ⚡⚡🔌💡", "Big Boy Zuckerberg", "Big Boy BEZOS", "Zucky", "GamerBoy72", "KahootMan"];
+let gameID = "";
+let bot_count = 150;
 
-// Make blank name more likely
+const botNames = ["Thomas", "Peter", "Charlotte", "Sarah", "Bob", "Jeff", "Tony", "😂", "😆", "😃", "KahootMan52", "🥸", "Isabella", "GamerMan53", "qwerty", "123456789", "Steven", "Stephen", "Jeremy", "£&@/)/£/", "🍌", "🥔", "🥖", "⚽️🏀🏈⚾️", "💢", "Imagine losing", "⠀⠀", "KahootMan56", "GamerBoy72", "KahootMan"];
 
 function startNewKahoot() {
 
-	let kahootListLength = kahoots.length;
-
+	// Add the new bots
 	for (var i = 0; i < bot_count; i++) {
 
-		// Add new bot
-		
-		kahoots.push(new Kahoot());
-
+		// Randomly select the bots name
 		let botName = botNames[Math.floor(Math.random() * (botNames.length - 1))];
-		botName = botName + " " + (i + kahoots.length);
+		botName = `${botName} ${kahootUniqueID}`;
 
-		kahootNameIndex.push(botName);
+		// Create the new bot
+		kahoots[botName] = new Kahoot();
+		kahoots[botName].botID = botName
 		
-		kahoots[kahootListLength + i].join(gameID, botName).catch(err => {
+		// Join the kahoot game
+		kahoots[botName].join(gameID, botName).catch(err => {
 			console.log(`Failed to join: ${err.description}`);
-
-			// Delete kahoot bot
-
-			removeKahoot(this.kahoots[0])
+			// Remove the bot
+			removeKahoot(this.botID)
 		})
 
 		
-		kahoots[kahootListLength + i].on("Joined", () => {
-			
+		kahoots[botName].on("Joined", () => {		
 			console.log("successfully joined game")
-			
 		});
 		
-		kahoots[kahootListLength + i].on("QuestionStart", question => {
-
-			let questionAnsNum = Math.floor(Math.random() * question.quizQuestionAnswers[question.questionIndex]) + 0
-				
+		kahoots[botName].on("QuestionStart", question => {
+			// Randomly select an answer
+			let questionAnsNum = Math.floor(Math.random() * question.numberOfChoices);		
 			question.answer(questionAnsNum);
-			
 		});
 		
-		kahoots[kahootListLength + i].on("Disconnect", error => {
-			console.log("disconnected because " + error);
-
-			// Remove the kahoots bot from the list
-
-			removeKahoot(this.kahoots[0])
+		kahoots[botName].on("Disconnect", error => {
+			console.log("Disconnected: " + error);
+			// Remove the bot
+			removeKahoot(this.botID)
 
 		});
 
-		kahoots[kahootListLength + i].on("QuizEnd", () => {
-			// Remove the kahoot
-			removeKahoot(this.kahoots[0])
+		kahoots[botName].on("QuizEnd", () => {
+			// Remove the bot
+			removeKahoot(this.botID)
 		});
 
-		// Continue with next bot
+		kahootUniqueID++;
 	}
-
-console.log("FINISHED")
 
 }
 
-function removeKahoot(kahootItem) {
+function removeKahoot(kahootBotName) {
 
-	if (kahootItem == null) {
-		console.log("No item found to delete")
-		return;
-	}
-
-	let kahootName = kahootItem.name
-	let indexOfName = kahootNameIndex.indexOf(kahootName);
-
-	if (kahoots[indexOfName].name == kahootName) {
+	if (kahootBotName in kahoots) {
 		// Remove kahoot
+		delete kahoots[kahootBotName]
 
-		kahoots.splice(indexOfName, 1);
-		kahootNameIndex.splice(indexOfName, 1);
-
-		console.log("Remove Kahoot: " + kahootName);
-		console.log(kahoots.length)
+		console.log("Remove Kahoot: " + kahootBotName);
+		console.log("Total kahoots: " + kahoots.length)
 	}
 }
 
@@ -131,23 +109,21 @@ app.get("/", (req, res) => {
 })
 
 app.get("/api/spam", (req, res) => {
-  var q = url.parse(req.url, true);
-	var urlQuest = q.query;
+	let q = url.parse(req.url, true);
+	let urlQuest = q.query;
 	
 	gameID = urlQuest.gameId;
 	bot_count = urlQuest.botCount;
 
-	if (bot_count > 100) {
-		bot_count = 100;
-	}
-	else if (bot_count < 0) {
-		bot_count = 0;
-	}
+	if (bot_count > 100) bot_count = 100;
+	else if (bot_count < 0) return res.end();
 	
 	startNewKahoot();
 	return res.end();
 })
 
 
+const port = process.env.PORT || 3000
+app.listen(port, () => {console.log("Listening on port " + port)})
 const port = process.env.PORT || 3000
 app.listen(port, () => {console.log("Listening on port " + port)})
